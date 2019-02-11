@@ -482,4 +482,31 @@ describe( 'wink tokenizer', function () {
                    { value: '"', tag: 'punctuation' } ];
     expect( t().tokenize( 'He said, "buy two/three apples"' ) ).to.deep.equal( output );
   } );
+
+  it( 'should tokenize a sentence in vietnamese', function () {
+    var text = `
+    Hương rừng thơm đồi vắng 
+    Nước suối trong thầm thì 
+    Cọ xòe ô che nắng 
+    Râm mát đường em đi
+    
+    Hôm qua em tới trường 
+    Mẹ dắt tay từng bước 
+    Hôm nay mẹ lên nương 
+    Một mình em đến lớp 
+    Chim đùa theo trong lá
+    Cá dưới khe thì thào
+    Hương rừng chen hương cốm
+    Em tới trường hương theo
+    
+    Trường của em be bé 
+    Nằm lặng giữa rừng cây 
+    Cô giáo em tre trẻ 
+    Dạy em hát rất hay 
+    Hương rừng thơm đồi vắng 
+    Nước suối trong thầm thì 
+    Cọ xòe ô che nắng 
+    Râm mát đường em đi`;
+    expect( t().tokenize( text ) ).to.deep.equal( text.split(/[\n\r\s]+/).filter((f) => f).map((f) => ({ value: f, tag: 'word' })) );
+  } );
 } );
