@@ -25,78 +25,7 @@
 
 //
 var contractions = require('./eng-contractions.js');
-var rgxSpaces = /\s+/g;
-// Ordinals only for Latin like 1st, 2nd or 12th or 33rd.
-var rgxOrdinalL1 = /1\dth|[04-9]th|1st|2nd|3rd|[02-9]1st|[02-9]2nd|[02-9]3rd|[02-9][04-9]th|\d+\d[04-9]th|\d+\d1st|\d+\d2nd|\d+\d3rd/g;
-// Apart from detecting pure integers or decimals, also detect numbers containing
-// `. - / ,` so that dates, ip address, fractions and things like codes or part
-// numbers are also detected as numbers only. These regex will therefore detected
-// 8.8.8.8 or 12-12-1924 or 1,1,1,1.00 or 1/4 or 1/4/66/777 as numbers.
-// Latin-1 Numbers.
-var rgxNumberL1 = /\d+\/\d+|\d(?:[\.\,\-\/]?\d)*(?:\.\d+)?/g;
-// Devanagari Numbers.
-var rgxNumberDV = /[\u0966-\u096F]+\/[\u0966-\u096F]+|[\u0966-\u096F](?:[\.\,\-\/]?[\u0966-\u096F])*(?:\.[\u0966-\u096F]+)?/g;
-var rgxMention = /\@\w+/g;
-// Latin-1 Hashtags.
-var rgxHashtagL1 = /\#[a-z][a-z0-9]*/gi;
-// Devanagari Hashtags; include Latin-1 as well.
-var rgxHashtagDV = /\#[\u0900-\u0963\u0970-\u097F][\u0900-\u0963\u0970-\u097F\u0966-\u096F0-9]*/gi;
-// EMail is EN character set.
-var rgxEmail = /[-!#$%&'*+\/=?^\w{|}~](?:\.?[-!#$%&'*+\/=?^\w`{|}~])*@[a-z0-9](?:-?\.?[a-z0-9])*(?:\.[a-z](?:-?[a-z0-9])*)+/gi;
-// Bitcoin, Ruble, Indian Rupee, Other Rupee, Dollar, Pound, Yen, Euro, Wong.
-var rgxCurrency = /[\₿\₽\₹\₨\$\£\¥\€\₩]/g;
-// These include both the punctuations: Latin-1 & Devanagari.
-var rgxPunctuation = /[\’\'\‘\’\`\“\”\"\[\]\(\)\{\}\…\,\.\!\;\?\-\:\u0964\u0965»«]/g;
-var rgxQuotedPhrase = /\"[^\"]*\"/g;
-// NOTE: URL will support only EN character set for now.
-var rgxURL = /(?:https?:\/\/)(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.\-\?#=]*)*\/?/gi;
-var rgxEmoji = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u26FF]|[\u2700-\u27BF]/g;
-var rgxEmoticon = /:-?[dps\*\/\[\]\{\}\(\)]|;-?[/(/)d]|<3/gi;
-var rgxTime = /(?:\d|[01]\d|2[0-3]):?(?:[0-5][0-9])?\s?(?:[ap]\.?m\.?|hours|hrs)/gi;
-// Inlcude [Latin-1 Supplement Unicode Block](https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block))
-// Include Vietnamse block http://vietunicode.sourceforge.net/charset/vietalphabet.html
 
-var rgxLatinBase = /a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF/;
-var rgxLatinExtraVi = /\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F/;
-
-var rgxSourceLatinAll = rgxLatinBase.source + rgxLatinExtraVi.source;
-var rgxWordL1 = new RegExp("[" + rgxSourceLatinAll + "]" + "[" + rgxSourceLatinAll + "\\']*", "gi");
-// console.log(rgxWordL1.source);
-// console.log(/[a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F][a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F\']*/gi.source);
-
-
-
-// var rgxWordL1 = /[a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F][a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F\']*/gi;
-// Define [Devanagari Unicode Block](https://unicode.org/charts/PDF/U0900.pdf)
-var rgxWordDV = /[\u0900-\u094F\u0951-\u0963\u0970-\u097F]+/gi;
-// Symbols go here; including Om.
-var rgxSymbol = /[\u0950\~\@\#\%\^\+\=\*\|\/<>&]/g;
-// For detecting if the word is a potential contraction.
-var rgxContraction = /\'/;
-// Singular & Plural possessive
-var rgxPosSingular = /([a-z]+)(\'s)$/i;
-var rgxPosPlural = /([a-z]+s)(\')$/i;
-// Regexes and their categories; used for tokenizing via match/split. The
-// sequence is *critical* for correct tokenization.
-var rgxsMaster = [
-  { regex: rgxQuotedPhrase, category: 'quoted_phrase' },
-  { regex: rgxURL, category: 'url' },
-  { regex: rgxEmail, category: 'email' },
-  { regex: rgxMention, category: 'mention' },
-  { regex: rgxHashtagL1, category: 'hashtag' },
-  { regex: rgxHashtagDV, category: 'hashtag' },
-  { regex: rgxEmoji, category: 'emoji' },
-  { regex: rgxEmoticon, category: 'emoticon' },
-  { regex: rgxTime, category: 'time' },
-  { regex: rgxOrdinalL1, category: 'ordinal' },
-  { regex: rgxNumberL1, category: 'number' },
-  { regex: rgxNumberDV, category: 'number' },
-  { regex: rgxCurrency, category: 'currency' },
-  { regex: rgxWordL1, category: 'word' },
-  { regex: rgxWordDV, category: 'word' },
-  { regex: rgxPunctuation, category: 'punctuation' },
-  { regex: rgxSymbol, category: 'symbol' }
-];
 
 // Used to generate finger print from the tokens.
 // NOTE: this variable is being reset in `defineConfig()`.
@@ -117,12 +46,106 @@ var fingerPrintCodes = {
   alien: 'z'
 };
 
+function initExtra(lang) {
+  if (lang == "vi") {
+    var rgxLatinExtraVi = /\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F/;
+    return {
+      rgxLatinExtra: rgxLatinExtraVi,
+    }
+  }
+  
+  // Define [Devanagari Unicode Block](https://unicode.org/charts/PDF/U0900.pdf)
+
+  var rgxWordDV = /[\u0900-\u094F\u0951-\u0963\u0970-\u097F]+/gi;
+  return {
+    rgxLatinExtra: undefined,
+    rgxWordExtra: rgxWordDV,
+  }
+}
+
+function initMasterRgx(lang) {
+
+  // Ordinals only for Latin like 1st, 2nd or 12th or 33rd.
+  var rgxOrdinalL1 = /1\dth|[04-9]th|1st|2nd|3rd|[02-9]1st|[02-9]2nd|[02-9]3rd|[02-9][04-9]th|\d+\d[04-9]th|\d+\d1st|\d+\d2nd|\d+\d3rd/g;
+  // Apart from detecting pure integers or decimals, also detect numbers containing
+  // `. - / ,` so that dates, ip address, fractions and things like codes or part
+  // numbers are also detected as numbers only. These regex will therefore detected
+  // 8.8.8.8 or 12-12-1924 or 1,1,1,1.00 or 1/4 or 1/4/66/777 as numbers.
+  // Latin-1 Numbers.
+  var rgxNumberL1 = /\d+\/\d+|\d(?:[\.\,\-\/]?\d)*(?:\.\d+)?/g;
+  // Devanagari Numbers.
+  var rgxNumberDV = /[\u0966-\u096F]+\/[\u0966-\u096F]+|[\u0966-\u096F](?:[\.\,\-\/]?[\u0966-\u096F])*(?:\.[\u0966-\u096F]+)?/g;
+  var rgxMention = /\@\w+/g;
+  // Latin-1 Hashtags.
+  var rgxHashtagL1 = /\#[a-z][a-z0-9]*/gi;
+  // Devanagari Hashtags; include Latin-1 as well.
+  var rgxHashtagDV = /\#[\u0900-\u0963\u0970-\u097F][\u0900-\u0963\u0970-\u097F\u0966-\u096F0-9]*/gi;
+  // EMail is EN character set.
+  var rgxEmail = /[-!#$%&'*+\/=?^\w{|}~](?:\.?[-!#$%&'*+\/=?^\w`{|}~])*@[a-z0-9](?:-?\.?[a-z0-9])*(?:\.[a-z](?:-?[a-z0-9])*)+/gi;
+  // Bitcoin, Ruble, Indian Rupee, Other Rupee, Dollar, Pound, Yen, Euro, Wong.
+  var rgxCurrency = /[\₿\₽\₹\₨\$\£\¥\€\₩]/g;
+  // These include both the punctuations: Latin-1 & Devanagari.
+  var rgxPunctuation = /[\’\'\‘\’\`\“\”\"\[\]\(\)\{\}\…\,\.\!\;\?\-\:\u0964\u0965»«]/g;
+  var rgxQuotedPhrase = /\"[^\"]*\"/g;
+  // NOTE: URL will support only EN character set for now.
+  var rgxURL = /(?:https?:\/\/)(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.\-\?#=]*)*\/?/gi;
+  var rgxEmoji = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u26FF]|[\u2700-\u27BF]/g;
+  var rgxEmoticon = /:-?[dps\*\/\[\]\{\}\(\)]|;-?[/(/)d]|<3/gi;
+  var rgxTime = /(?:\d|[01]\d|2[0-3]):?(?:[0-5][0-9])?\s?(?:[ap]\.?m\.?|hours|hrs)/gi;
+  // Inlcude [Latin-1 Supplement Unicode Block](https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block))
+  // Include Vietnamse block http://vietunicode.sourceforge.net/charset/vietalphabet.html
+
+  var rgxLatinBase = /a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF/;
+
+  var extraObj = initExtra(lang);
+  var rgxSourceLatinAll = rgxLatinBase.source + (extraObj.rgxLatinExtra ? extraObj.rgxLatinExtra.source : "");
+  var rgxWordL1 = new RegExp("[" + rgxSourceLatinAll + "]" + "[" + rgxSourceLatinAll + "\\']*", "gi");
+  // console.log(rgxWordL1.source);
+  // console.log(/[a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F][a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F\']*/gi.source);
+
+
+
+  // var rgxWordL1 = /[a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F][a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F\']*/gi;
+  // Define [Devanagari Unicode Block](https://unicode.org/charts/PDF/U0900.pdf)
+  // var rgxWordDV = /[\u0900-\u094F\u0951-\u0963\u0970-\u097F]+/gi;
+  // Symbols go here; including Om.
+  var rgxSymbol = /[\u0950\~\@\#\%\^\+\=\*\|\/<>&]/g;
+
+  // Regexes and their categories; used for tokenizing via match/split. The
+  // sequence is *critical* for correct tokenization.
+  var rgxsMaster = [
+    { regex: rgxQuotedPhrase, category: 'quoted_phrase' },
+    { regex: rgxURL, category: 'url' },
+    { regex: rgxEmail, category: 'email' },
+    { regex: rgxMention, category: 'mention' },
+    { regex: rgxHashtagL1, category: 'hashtag' },
+    { regex: rgxHashtagDV, category: 'hashtag' },
+    { regex: rgxEmoji, category: 'emoji' },
+    { regex: rgxEmoticon, category: 'emoticon' },
+    { regex: rgxTime, category: 'time' },
+    { regex: rgxOrdinalL1, category: 'ordinal' },
+    { regex: rgxNumberL1, category: 'number' },
+    { regex: rgxNumberDV, category: 'number' },
+    { regex: rgxCurrency, category: 'currency' },
+    { regex: rgxWordL1, category: 'word' },
+    // { regex: rgxWordDV, category: 'word' },
+    { regex: rgxPunctuation, category: 'punctuation' },
+    { regex: rgxSymbol, category: 'symbol' }
+  ];
+
+  if (extraObj.rgxWordExtra) {
+    rgxsMaster.push({ regex: extraObj.rgxWordExtra, category: "word" });
+  }
+
+  return rgxsMaster;
+}
+
 // ### tokenizer
 /**
  *
  * Creates an instance of {@link Tokenizer}.
  *
- * @return {Tokenizer} object conatining set of API methods for tokenizing a sentence
+ * object conatining set of API methods for tokenizing a sentence
  * and defining configuration, plugin etc.
  * @example
  * // Load wink tokenizer.
@@ -130,7 +153,17 @@ var fingerPrintCodes = {
  * // Create your instance of wink tokenizer.
  * var myTokenizer = tokenizer();
 */
-var tokenizer = function () {
+var Tokenizer = function (lang) {
+
+  var rgxSpaces = /\s+/g;
+  // For detecting if the word is a potential contraction.
+  var rgxContraction = /\'/;
+  // Singular & Plural possessive
+  var rgxPosSingular = /([a-z]+)(\'s)$/i;
+  var rgxPosPlural = /([a-z]+s)(\')$/i;
+
+  var rgxsMaster = initMasterRgx(lang)
+
   // Default configuration: most comprehensive tokenization. Make deep copy!
   var rgxs = rgxsMaster.slice(0);
   // The result of last call to `tokenize()` is retained here.
@@ -142,7 +175,7 @@ var tokenizer = function () {
    * @class Tokenizer
    * @hideconstructor
    */
-  var methods = Object.create(null);
+  // var methods = Object.create(null);
 
   // ### manageContraction
   /**
@@ -481,12 +514,21 @@ var tokenizer = function () {
 
   // Set quoted_phrase as false becuase mostly it is not required.
   defineConfig({ quoted_phrase: false }); // eslint-disable-line camelcase
-  methods.defineConfig = defineConfig;
-  methods.tokenize = tokenize;
-  methods.getTokensFP = getTokensFP;
-  methods.addTag = addTag;
-  methods.addRegex = addRegex;
-  return methods;
+
+  // return 1;
+  return {
+    defineConfig: defineConfig,
+    tokenize: tokenize,
+    getTokensFP: getTokensFP,
+    addTag: addTag,
+    addRegex: addRegex,
+  };
+  // methods.defineConfig = defineConfig;
+  // methods.tokenize = tokenize;
+  // methods.getTokensFP = getTokensFP;
+  // methods.addTag = addTag;
+  // methods.addRegex = addRegex;
+  // return methods;
 };
 
-module.exports = tokenizer;
+module.exports = Tokenizer;
