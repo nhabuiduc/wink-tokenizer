@@ -255,59 +255,6 @@ describe( 'wink tokenizer', function () {
     expect( t().tokenize( 'Zoë submitted her résumé🎉 in Nestlé:-)' ) ).to.deep.equal( output );
   } );
 
-  it( 'should tokenize a sentence in french', function () {
-    var output = [ { value: 'Petit', tag: 'word' },
-                   { value: 'a', tag: 'word' },
-                   { value: 'petit', tag: 'word' },
-                   { value: ',', tag: 'punctuation' },
-                   { value: 'l', tag: 'word' },
-                   { value: '’', tag: 'punctuation' },
-                   { value: 'oiseau', tag: 'word' },
-                   { value: 'fait', tag: 'word' },
-                   { value: 'son', tag: 'word' },
-                   { value: 'nid', tag: 'word' } ];
-    expect( t().tokenize( 'Petit a petit, l’oiseau fait son nid' ) ).to.deep.equal( output );
-  } );
-
-  it( 'should tokenize another sentence in french', function () {
-    var output = [ { value: 'Mieux', tag: 'word' },
-                   { value: 'vaut', tag: 'word' },
-                   { value: 'prévenir', tag: 'word' },
-                   { value: 'que', tag: 'word' },
-                   { value: 'guérir', tag: 'word' },
-                   { value: ':)', tag: 'emoticon' } ];
-    expect( t().tokenize( 'Mieux vaut prévenir que guérir:)' ) ).to.deep.equal( output );
-  } );
-
-  it( 'should tokenize a sentence in german', function () {
-    var output = [ { value: 'Übung', tag: 'word' },
-                   { value: 'macht', tag: 'word' },
-                   { value: 'den', tag: 'word' },
-                   { value: 'Meister', tag: 'word' },
-                   { value: '.', tag: 'punctuation' } ];
-    expect( t().tokenize( 'Übung macht den Meister.' ) ).to.deep.equal( output );
-  } );
-
-  it( 'should tokenize a sentence in spanish', function () {
-    var output = [ { value: 'Donde', tag: 'word' },
-                   { value: 'hay', tag: 'word' },
-                   { value: 'gana', tag: 'word' },
-                   { value: ',', tag: 'punctuation' },
-                   { value: 'hay', tag: 'word' },
-                   { value: 'maña', tag: 'word' },
-                   { value: '.', tag: 'punctuation' } ];
-    expect( t().tokenize( 'Donde hay gana, hay maña.' ) ).to.deep.equal( output );
-  } );
-
-  it( 'should tokenize a sentence in icelandic', function () {
-    var output = [ { value: 'Vinr', tag: 'word' },
-                   { value: 'er', tag: 'word' },
-                   { value: 'sás', tag: 'word' },
-                   { value: 'vörnuð', tag: 'word' },
-                   { value: 'býðr', tag: 'word' },
-                   { value: '.', tag: 'punctuation' } ];
-    expect( t().tokenize( 'Vinr er sás vörnuð býðr.' ) ).to.deep.equal( output );
-  } );
 
   it( 'should tokenize a sentence containing lots of currency symbols', function () {
     var output = [ { value: 'I', tag: 'word' },
@@ -483,30 +430,14 @@ describe( 'wink tokenizer', function () {
     expect( t().tokenize( 'He said, "buy two/three apples"' ) ).to.deep.equal( output );
   } );
 
-  it( 'should tokenize a sentence in vietnamese', function () {
-    var text = `
-    Hương rừng thơm đồi vắng 
-    Nước suối trong thầm thì 
-    Cọ xòe ô che nắng 
-    Râm mát đường em đi
-    
-    Hôm qua em tới trường 
-    Mẹ dắt tay từng bước 
-    Hôm nay mẹ lên nương 
-    Một mình em đến lớp 
-    Chim đùa theo trong lá
-    Cá dưới khe thì thào
-    Hương rừng chen hương cốm
-    Em tới trường hương theo
-    
-    Trường của em be bé 
-    Nằm lặng giữa rừng cây 
-    Cô giáo em tre trẻ 
-    Dạy em hát rất hay 
-    Hương rừng thơm đồi vắng 
-    Nước suối trong thầm thì 
-    Cọ xòe ô che nắng 
-    Râm mát đường em đi`;
-    expect( t().tokenize( text ) ).to.deep.equal( text.split(/[\n\r\s]+/).filter((f) => f).map((f) => ({ value: f, tag: 'word' })) );
+
+  it( 'should tokenize more punctuations', function () {
+    var output = [ { value: 'Here', tag: 'word' },
+                   { value: '»', tag: 'punctuation' },
+                   { value: '«', tag: 'punctuation' },
+                   { value: '»', tag: 'punctuation' },
+                   { value: '«', tag: 'punctuation' },
+                  ];
+    expect( t().tokenize( 'Here »« » «' ) ).to.deep.equal( output );
   } );
 } );

@@ -22,8 +22,7 @@
   ],
   "main": "src/wink-tokenizer.js",
   "scripts": {
-    "pretest": "npm run lint && npm run docs",
-    "test": "istanbul cover _mocha ./test/",
+    "test": "istanbul cover _mocha ./test/**/* ./test/",
     "coveralls": "istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "sourcedocs": "docker -i src -o ./sourcedocs --sidebar no",
     "lint": "eslint ./src/*.js ./test/*.js ./runkit/*.js",
@@ -41,13 +40,12 @@
   "homepage": "http://winkjs.org/",
   "devDependencies": {
     "chai": "^4.2.0",
-    "coveralls": "^3.0.2",
+    "coveralls": "^3.1.1",
     "docdash": "^1.0.0",
     "docker": "^1.0.0",
-    "eslint": "^5.8.0",
     "istanbul": "^0.4.5",
     "jsdoc": "^3.5.5",
-    "mocha": "^5.2.0",
+    "mocha": "^9.0.2",
     "mocha-lcov-reporter": "^1.3.0"
   },
   "runkitExampleFilename": "./runkit/example.js"

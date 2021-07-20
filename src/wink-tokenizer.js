@@ -24,7 +24,7 @@
 //     DEALINGS IN THE SOFTWARE.
 
 //
-var contractions = require( './eng-contractions.js' );
+var contractions = require('./eng-contractions.js');
 var rgxSpaces = /\s+/g;
 // Ordinals only for Latin like 1st, 2nd or 12th or 33rd.
 var rgxOrdinalL1 = /1\dth|[04-9]th|1st|2nd|3rd|[02-9]1st|[02-9]2nd|[02-9]3rd|[02-9][04-9]th|\d+\d[04-9]th|\d+\d1st|\d+\d2nd|\d+\d3rd/g;
@@ -46,7 +46,7 @@ var rgxEmail = /[-!#$%&'*+\/=?^\w{|}~](?:\.?[-!#$%&'*+\/=?^\w`{|}~])*@[a-z0-9](?
 // Bitcoin, Ruble, Indian Rupee, Other Rupee, Dollar, Pound, Yen, Euro, Wong.
 var rgxCurrency = /[\₿\₽\₹\₨\$\£\¥\€\₩]/g;
 // These include both the punctuations: Latin-1 & Devanagari.
-var rgxPunctuation = /[\’\'\‘\’\`\“\”\"\[\]\(\)\{\}\…\,\.\!\;\?\-\:\u0964\u0965]/g;
+var rgxPunctuation = /[\’\'\‘\’\`\“\”\"\[\]\(\)\{\}\…\,\.\!\;\?\-\:\u0964\u0965»«]/g;
 var rgxQuotedPhrase = /\"[^\"]*\"/g;
 // NOTE: URL will support only EN character set for now.
 var rgxURL = /(?:https?:\/\/)(?:[\da-z\.-]+)\.(?:[a-z\.]{2,6})(?:[\/\w\.\-\?#=]*)*\/?/gi;
@@ -55,7 +55,18 @@ var rgxEmoticon = /:-?[dps\*\/\[\]\{\}\(\)]|;-?[/(/)d]|<3/gi;
 var rgxTime = /(?:\d|[01]\d|2[0-3]):?(?:[0-5][0-9])?\s?(?:[ap]\.?m\.?|hours|hrs)/gi;
 // Inlcude [Latin-1 Supplement Unicode Block](https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block))
 // Include Vietnamse block http://vietunicode.sourceforge.net/charset/vietalphabet.html
-var rgxWordL1 = /[a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F][a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F\']*/gi;
+
+var rgxLatinBase = /a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF/;
+var rgxLatinExtraVi = /\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F/;
+
+var rgxSourceLatinAll = rgxLatinBase.source + rgxLatinExtraVi.source;
+var rgxWordL1 = new RegExp("[" + rgxSourceLatinAll + "]" + "[" + rgxSourceLatinAll + "\\']*", "gi");
+// console.log(rgxWordL1.source);
+// console.log(/[a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F][a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F\']*/gi.source);
+
+
+
+// var rgxWordL1 = /[a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F][a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F\']*/gi;
 // Define [Devanagari Unicode Block](https://unicode.org/charts/PDF/U0900.pdf)
 var rgxWordDV = /[\u0900-\u094F\u0951-\u0963\u0970-\u097F]+/gi;
 // Symbols go here; including Om.
@@ -121,7 +132,7 @@ var fingerPrintCodes = {
 */
 var tokenizer = function () {
   // Default configuration: most comprehensive tokenization. Make deep copy!
-  var rgxs = rgxsMaster.slice( 0 );
+  var rgxs = rgxsMaster.slice(0);
   // The result of last call to `tokenize()` is retained here.
   var finalTokens = [];
   // Returned!
@@ -131,7 +142,7 @@ var tokenizer = function () {
    * @class Tokenizer
    * @hideconstructor
    */
-  var methods = Object.create( null );
+  var methods = Object.create(null);
 
   // ### manageContraction
   /**
@@ -146,26 +157,26 @@ var tokenizer = function () {
    * @return {object[]} updated tokens according to the `word.`
    * @private
   */
-  var manageContraction = function ( word, tokens ) {
-    var ct = contractions[ word ];
+  var manageContraction = function (word, tokens) {
+    var ct = contractions[word];
     var matches;
-    if ( ct === undefined ) {
+    if (ct === undefined) {
       // Try possesive of sigular & plural forms
-      matches = word.match( rgxPosSingular );
-      if ( matches ) {
-        tokens.push( { value: matches[ 1 ], tag: 'word' } );
-        tokens.push( { value: matches[ 2 ], tag: 'word' } );
+      matches = word.match(rgxPosSingular);
+      if (matches) {
+        tokens.push({ value: matches[1], tag: 'word' });
+        tokens.push({ value: matches[2], tag: 'word' });
       } else {
-        matches = word.match( rgxPosPlural );
-        if ( matches ) {
-          tokens.push( { value: matches[ 1 ], tag: 'word' } );
-          tokens.push( { value: matches[ 2 ], tag: 'word' } );
-        } else tokens.push( { value: word, tag: 'word' } );
+        matches = word.match(rgxPosPlural);
+        if (matches) {
+          tokens.push({ value: matches[1], tag: 'word' });
+          tokens.push({ value: matches[2], tag: 'word' });
+        } else tokens.push({ value: word, tag: 'word' });
       }
     } else {
       // Manage via lookup; ensure cloning!
-      tokens.push( Object.assign( {}, ct[ 0 ] ) );
-      tokens.push( Object.assign( {}, ct[ 1 ] ) );
+      tokens.push(Object.assign({}, ct[0]));
+      tokens.push(Object.assign({}, ct[1]));
     }
     return tokens;
   }; // manageContraction()
@@ -184,45 +195,45 @@ var tokenizer = function () {
    * @return {array} of tokens.
    * @private
   */
-  var tokenizeTextUnit = function ( text, rgxSplit ) {
+  var tokenizeTextUnit = function (text, rgxSplit) {
     // Regex matches go here; note each match is a token and has the same tag
     // as of regex's category.
-    var matches = text.match( rgxSplit.regex );
+    var matches = text.match(rgxSplit.regex);
     // Balance is "what needs to be tokenized".
-    var balance = text.split( rgxSplit.regex );
+    var balance = text.split(rgxSplit.regex);
     // The result, in form of combination of tokens & matches, is captured here.
     var tokens = [];
     // The tag;
     var tag = rgxSplit.category;
     // Helper variables.
     var aword,
-        i,
-        imax,
-        k = 0,
-        t;
+      i,
+      imax,
+      k = 0,
+      t;
 
     // Combine tokens & matches in the following pattern [ b0 m0 b1 m1 ... ]
-    matches = ( matches ) ? matches : [];
-    for ( i = 0, imax = balance.length; i < imax; i += 1 ) {
-      t = balance[ i ];
+    matches = (matches) ? matches : [];
+    for (i = 0, imax = balance.length; i < imax; i += 1) {
+      t = balance[i];
       t = t.trim();
-      if ( t ) tokens.push( t );
-      if ( k < matches.length ) {
-        if ( tag === 'word' ) {
+      if (t) tokens.push(t);
+      if (k < matches.length) {
+        if (tag === 'word') {
           // Tag type `word` token may have a contraction.
-          aword = matches[ k ];
-          if ( rgxContraction.test( aword ) ) {
-            tokens = manageContraction( aword, tokens );
+          aword = matches[k];
+          if (rgxContraction.test(aword)) {
+            tokens = manageContraction(aword, tokens);
           } else {
             // Means there is no contraction.
-            tokens.push( { value: aword, tag: tag } );
+            tokens.push({ value: aword, tag: tag });
           }
-        } else tokens.push( { value: matches[ k ], tag: tag } );
+        } else tokens.push({ value: matches[k], tag: tag });
       }
       k += 1;
     }
 
-    return ( tokens );
+    return (tokens);
   }; // tokenizeTextUnit()
 
   // ### tokenizeTextRecursively
@@ -238,28 +249,28 @@ var tokenizer = function () {
    * @return {undefined} nothing!
    * @private
   */
-  var tokenizeTextRecursively = function ( text, regexes ) {
+  var tokenizeTextRecursively = function (text, regexes) {
     var sentence = text.trim();
     var tokens = [];
     var i, imax;
 
-    if ( !regexes.length ) {
+    if (!regexes.length) {
       // No regex left, split on `spaces` and tag every token as **alien**.
-      text.split( rgxSpaces ).forEach( function ( tkn ) {
-        finalTokens.push( { value: tkn.trim(), tag: 'alien' } );
-      } );
+      text.split(rgxSpaces).forEach(function (tkn) {
+        finalTokens.push({ value: tkn.trim(), tag: 'alien' });
+      });
       return;
     }
 
-    var rgx = regexes[ 0 ];
-    tokens = tokenizeTextUnit( sentence, rgx );
+    var rgx = regexes[0];
+    tokens = tokenizeTextUnit(sentence, rgx);
 
-    for ( i = 0, imax = tokens.length; i < imax; i += 1 ) {
-      if ( typeof tokens[ i ] === 'string' ) {
+    for (i = 0, imax = tokens.length; i < imax; i += 1) {
+      if (typeof tokens[i] === 'string') {
         // Strings become candidates for further tokenization.
-        tokenizeTextRecursively( tokens[ i ], regexes.slice( 1 ) );
+        tokenizeTextRecursively(tokens[i], regexes.slice(1));
       } else {
-        finalTokens.push( tokens[ i ] );
+        finalTokens.push(tokens[i]);
       }
     }
   }; // tokenizeTextRecursively()
@@ -310,21 +321,21 @@ var tokenizer = function () {
    * var myTokenizer.defineConfig( {} );
    * // -> 0
   */
-  var defineConfig = function ( config ) {
-    if ( typeof config === 'object' && Object.keys( config ).length ) {
-      rgxs = rgxsMaster.filter( function ( rgx ) {
+  var defineConfig = function (config) {
+    if (typeof config === 'object' && Object.keys(config).length) {
+      rgxs = rgxsMaster.filter(function (rgx) {
         // Config for the Category of `rgx`.
-        var cc = config[ rgx.category ];
+        var cc = config[rgx.category];
         // Means `undefined` & `null` values are taken as true; otherwise
         // standard **truthy** and **falsy** interpretation applies!!
-        return ( cc === undefined || cc === null || !!cc );
-      } );
+        return (cc === undefined || cc === null || !!cc);
+      });
     } else rgxs = [];
     // Count normalized length i.e. ignore multi-script entries.
-    const uniqueCats = Object.create( null );
-    rgxs.forEach( function ( rgx ) {
-      uniqueCats[ rgx.category ] = true;
-    } );
+    const uniqueCats = Object.create(null);
+    rgxs.forEach(function (rgx) {
+      uniqueCats[rgx.category] = true;
+    });
     // Reset the `fingerPrintCodes` variable.
     fingerPrintCodes = {
       emoticon: 'c',
@@ -342,7 +353,7 @@ var tokenizer = function () {
       word: 'w',
       alien: 'z'
     };
-    return ( ( Object.keys( uniqueCats ) ).length );
+    return ((Object.keys(uniqueCats)).length);
   }; // defineConfig()
 
   // ### tokenize
@@ -372,9 +383,9 @@ var tokenizer = function () {
    * //      { value: 'URL', tag: 'word' },
    * //      { value: '!', tag: 'punctuation' } ]
   */
-  var tokenize = function ( sentence ) {
+  var tokenize = function (sentence) {
     finalTokens = [];
-    tokenizeTextRecursively( sentence, rgxs );
+    tokenizeTextRecursively(sentence, rgxs);
     return finalTokens;
   }; // tokenize()
 
@@ -399,16 +410,16 @@ var tokenizer = function () {
   */
   var getTokensFP = function () {
     var fp = [];
-    finalTokens.forEach( function ( t ) {
-      fp.push( ( fingerPrintCodes[ t.tag ] ) ? fingerPrintCodes[ t.tag ] : t.value );
-    } );
-    return fp.join( '' );
+    finalTokens.forEach(function (t) {
+      fp.push((fingerPrintCodes[t.tag]) ? fingerPrintCodes[t.tag] : t.value);
+    });
+    return fp.join('');
   }; // getFingerprint()
 
   // ### addTag
   var addTag = function (name, fingerprintCode) {
     if (fingerPrintCodes[name]) {
-      throw new Error( 'Tag ' + name + ' already exists' );
+      throw new Error('Tag ' + name + ' already exists');
     }
 
     fingerPrintCodes[name] = fingerprintCode;
@@ -460,16 +471,16 @@ var tokenizer = function () {
 
   var addRegex = function (regex, tag, fingerprintCode) {
     if (!fingerPrintCodes[tag] && !fingerprintCode) {
-      throw new Error( 'Tag ' + tag + ' doesn\'t exist; Provide a \'fingerprintCode\' to add it as a tag.' );
+      throw new Error('Tag ' + tag + ' doesn\'t exist; Provide a \'fingerprintCode\' to add it as a tag.');
     } else if (!fingerPrintCodes[tag]) {
       addTag(tag, fingerprintCode);
     }
 
-    rgxs.unshift( { regex: regex, category: tag } );
+    rgxs.unshift({ regex: regex, category: tag });
   }; // addRegex()
 
   // Set quoted_phrase as false becuase mostly it is not required.
-  defineConfig( { quoted_phrase: false } ); // eslint-disable-line camelcase
+  defineConfig({ quoted_phrase: false }); // eslint-disable-line camelcase
   methods.defineConfig = defineConfig;
   methods.tokenize = tokenize;
   methods.getTokensFP = getTokensFP;
