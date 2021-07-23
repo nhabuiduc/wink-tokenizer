@@ -46,14 +46,22 @@ var fingerPrintCodes = {
   alien: 'z'
 };
 
+/**
+ * @typedef {Object} InitExtraReturn
+ * @property {RegExp} [rgxLatinExtra]
+ * @property {RegExp} [rgxWordExtra] 
+ * @property {boolean} [ignoreLatin]
+ */
 /***
  * @param {string|RegExp} langOrCustomRegex
+ * @returns {InitExtraReturn}
  */
 function initExtra(langOrCustomRegex) {
   if (langOrCustomRegex instanceof RegExp) {
     return {
       rgxLatinExtra: undefined,
       rgxWordExtra: langOrCustomRegex,
+      ignoreLatin: true,
     }
   }
 
@@ -63,7 +71,7 @@ function initExtra(langOrCustomRegex) {
     return { rgxLatinExtra: /\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F/ }
   }
   if (lang == "he") {
-    return { rgxWordExtra: /[\u0590-\u05FF]+/gi }
+    return { rgxWordExtra: /[\u0590-\u05FF]+/gi, ignoreLatin: true, }
   }
 
   if (lang && lang.indexOf("en") == 0) {
@@ -79,10 +87,11 @@ function initExtra(langOrCustomRegex) {
   return {
     rgxLatinExtra: undefined,
     rgxWordExtra: rgxWordDV,
+    // ignoreLatin: true,
   }
 }
 
-function initMasterRgx(langOrCustomRegex) {  
+function initMasterRgx(langOrCustomRegex) {
   // Ordinals only for Latin like 1st, 2nd or 12th or 33rd.
   var rgxOrdinalL1 = /1\dth|[04-9]th|1st|2nd|3rd|[02-9]1st|[02-9]2nd|[02-9]3rd|[02-9][04-9]th|\d+\d[04-9]th|\d+\d1st|\d+\d2nd|\d+\d3rd/g;
   // Apart from detecting pure integers or decimals, also detect numbers containing
@@ -118,7 +127,7 @@ function initMasterRgx(langOrCustomRegex) {
   var extraObj = initExtra(langOrCustomRegex);
   var rgxSourceLatinAll = rgxLatinBase.source + (extraObj.rgxLatinExtra ? extraObj.rgxLatinExtra.source : "");
   var rgxWordL1 = new RegExp("[" + rgxSourceLatinAll + "]" + "[" + rgxSourceLatinAll + "\\']*", "gi");
-  if (langOrCustomRegex instanceof RegExp) {
+  if (extraObj.ignoreLatin) {
     rgxWordL1 = undefined;
   }
   // console.log(rgxWordL1.source);
