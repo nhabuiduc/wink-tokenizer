@@ -22,7 +22,8 @@
   ],
   "main": "src/wink-tokenizer.js",
   "scripts": {
-    "test": "istanbul cover _mocha ./test/**/* ./test/",
+    "test": "mocha -w ./test/**/* ./test/",
+    "test-coverage": "istanbul cover _mocha -w ./test/**/* ./test/",
     "coveralls": "istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "sourcedocs": "docker -i src -o ./sourcedocs --sidebar no",
     "lint": "eslint ./src/*.js ./test/*.js ./runkit/*.js",

@@ -7,9 +7,8 @@ var describe = mocha.describe;
 var it = mocha.it;
 
 describe('vi - Vietnamese', function () {
-    var tokenizer = t();
-    var tokenize = tokenizer.tokenize;
-    var fp = tokenizer.getTokensFP;
+    var tokenizer = t("vi");
+    
 
     it("tokenizer", () => {
         var text = `
@@ -35,6 +34,6 @@ describe('vi - Vietnamese', function () {
     Nước suối trong thầm thì 
     Cọ xòe ô che nắng 
     Râm mát đường em đi`;
-        expect(t().tokenize(text)).to.deep.equal(text.split(/[\n\r\s]+/).filter((f) => f).map((f) => ({ value: f, tag: 'word' })));
+        expect(tokenizer.tokenize(text)).to.deep.equal(text.split(/[\n\r\s]+/).filter((f) => f).map((f) => ({ value: f, tag: 'word' })));
     })
 });

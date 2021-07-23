@@ -46,14 +46,33 @@ var fingerPrintCodes = {
   alien: 'z'
 };
 
-function initExtra(lang) {
-  if (lang == "vi") {
-    var rgxLatinExtraVi = /\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F/;
+/***
+ * @param {string|RegExp} langOrCustomRegex
+ */
+function initExtra(langOrCustomRegex) {
+  if (langOrCustomRegex instanceof RegExp) {
     return {
-      rgxLatinExtra: rgxLatinExtraVi,
+      rgxLatinExtra: undefined,
+      rgxWordExtra: langOrCustomRegex,
     }
   }
-  
+
+  var lang = langOrCustomRegex || "";
+
+  if (lang == "vi") {
+    return { rgxLatinExtra: /\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F/ }
+  }
+  if (lang == "he") {
+    return { rgxWordExtra: /[\u0590-\u05FF]+/gi }
+  }
+
+  if (lang && lang.indexOf("en") == 0) {
+    return {
+      rgxLatinExtra: undefined,
+      rgxWordExtra: undefined,
+    }
+  }
+
   // Define [Devanagari Unicode Block](https://unicode.org/charts/PDF/U0900.pdf)
 
   var rgxWordDV = /[\u0900-\u094F\u0951-\u0963\u0970-\u097F]+/gi;
@@ -63,8 +82,7 @@ function initExtra(lang) {
   }
 }
 
-function initMasterRgx(lang) {
-
+function initMasterRgx(langOrCustomRegex) {  
   // Ordinals only for Latin like 1st, 2nd or 12th or 33rd.
   var rgxOrdinalL1 = /1\dth|[04-9]th|1st|2nd|3rd|[02-9]1st|[02-9]2nd|[02-9]3rd|[02-9][04-9]th|\d+\d[04-9]th|\d+\d1st|\d+\d2nd|\d+\d3rd/g;
   // Apart from detecting pure integers or decimals, also detect numbers containing
@@ -97,9 +115,12 @@ function initMasterRgx(lang) {
 
   var rgxLatinBase = /a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF/;
 
-  var extraObj = initExtra(lang);
+  var extraObj = initExtra(langOrCustomRegex);
   var rgxSourceLatinAll = rgxLatinBase.source + (extraObj.rgxLatinExtra ? extraObj.rgxLatinExtra.source : "");
   var rgxWordL1 = new RegExp("[" + rgxSourceLatinAll + "]" + "[" + rgxSourceLatinAll + "\\']*", "gi");
+  if (langOrCustomRegex instanceof RegExp) {
+    rgxWordL1 = undefined;
+  }
   // console.log(rgxWordL1.source);
   // console.log(/[a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F][a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F\']*/gi.source);
 
@@ -127,15 +148,22 @@ function initMasterRgx(lang) {
     { regex: rgxNumberL1, category: 'number' },
     { regex: rgxNumberDV, category: 'number' },
     { regex: rgxCurrency, category: 'currency' },
-    { regex: rgxWordL1, category: 'word' },
+    // { regex: rgxWordL1, category: 'word' },
     // { regex: rgxWordDV, category: 'word' },
-    { regex: rgxPunctuation, category: 'punctuation' },
-    { regex: rgxSymbol, category: 'symbol' }
+    // { regex: rgxPunctuation, category: 'punctuation' },
+    // { regex: rgxSymbol, category: 'symbol' }
   ];
+
+  if (rgxWordL1) {
+    rgxsMaster.push({ regex: rgxWordL1, category: "word" });
+  }
 
   if (extraObj.rgxWordExtra) {
     rgxsMaster.push({ regex: extraObj.rgxWordExtra, category: "word" });
   }
+
+  rgxsMaster.push({ regex: rgxPunctuation, category: "punctuation" });
+  rgxsMaster.push({ regex: rgxSymbol, category: "symbol" });
 
   return rgxsMaster;
 }
@@ -153,7 +181,7 @@ function initMasterRgx(lang) {
  * // Create your instance of wink tokenizer.
  * var myTokenizer = tokenizer();
 */
-var Tokenizer = function (lang) {
+var Tokenizer = function (langOrCustomRegex) {
 
   var rgxSpaces = /\s+/g;
   // For detecting if the word is a potential contraction.
@@ -162,7 +190,7 @@ var Tokenizer = function (lang) {
   var rgxPosSingular = /([a-z]+)(\'s)$/i;
   var rgxPosPlural = /([a-z]+s)(\')$/i;
 
-  var rgxsMaster = initMasterRgx(lang)
+  var rgxsMaster = initMasterRgx(langOrCustomRegex)
 
   // Default configuration: most comprehensive tokenization. Make deep copy!
   var rgxs = rgxsMaster.slice(0);

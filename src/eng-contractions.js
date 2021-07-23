@@ -32,7 +32,7 @@ contractions[ 'can\'t' ] = [ { value: 'ca', tag: word }, { value: 'n\'t', tag: w
 contractions[ 'CAN\'T' ] = [ { value: 'CA', tag: word }, { value: 'N\'T', tag: word } ];
 contractions[ 'Can\'t' ] = [ { value: 'Ca', tag: word }, { value: 'n\'t', tag: word } ];
 
-contractions[ 'Couldn\'t' ] = [ { value: 'could', tag: word }, { value: 'n\'t', tag: word } ];
+contractions[ 'couldn\'t' ] = [ { value: 'could', tag: word }, { value: 'n\'t', tag: word } ];
 contractions[ 'COULDN\'T' ] = [ { value: 'COULD', tag: word }, { value: 'N\'T', tag: word } ];
 contractions[ 'Couldn\'t' ] = [ { value: 'Could', tag: word }, { value: 'n\'t', tag: word } ];
 
