@@ -57,6 +57,14 @@ var fingerPrintCodes = {
  * @returns {InitExtraReturn}
  */
 function initExtra(langOrCustomRegex) {
+  if (langOrCustomRegex == "all-words") {
+    return {
+      rgxLatinExtra: undefined,
+      rgxWordExtra: undefined,
+      ignoreLatin: true,
+    }
+  }
+  
   if (langOrCustomRegex instanceof RegExp) {
     return {
       rgxLatinExtra: undefined,
