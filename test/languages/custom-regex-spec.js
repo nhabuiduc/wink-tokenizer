@@ -16,7 +16,7 @@ describe('Regex custom', function () {
         { value: '.', tag: 'punctuation' }];
         expect(tokenizer.tokenize('Hôm qua em đi.')).to.deep.equal(output);
     });
-    it.only('able to pass custom regex', function () {
+    it('able to pass custom regex', function () {
         // var tokenizer = t(new RegExp("[\\u61-\\u7A\\uC0-\\uD6\\uD8-\\uF6\\u00F8-\\u00FF\\u0100-\\u024F\\u1E00-\\u1EFF\\u0300-\\u036F]+", "gi"));
         // var tokenizer = t(/[\u61-\u7a\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u024F\u1E00-\u1EFF\u0300-\u036F]+/gi);
         var tokenizer = t(new RegExp("[\\u61-\\u7a\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF\\u0100-\\u024F\\u1E00-\\u1EFF\\u0300-\\u036F]+","gi"));
