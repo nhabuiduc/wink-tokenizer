@@ -36,11 +36,15 @@ describe('he - Hebrew', function () {
             { value: 'כי', tag: 'word' },
             { value: 'חם', tag: 'word' },
             { value: '.', tag: 'punctuation' },
-            { value: 'כהרף־עין', tag: 'word' },
+            { value: 'כהרף', tag: 'word' },
+            { value: '־', tag: 'alien' },
+            { value: 'עין', tag: 'word' },
             { value: 'נשבט', tag: 'word' },
             { value: 'לךָ', tag: 'word' },
             { value: 'גוץ', tag: 'word' },
-            { value: 'צְמֵא־דם', tag: 'word' },
+            { value: 'צְמֵא', tag: 'word' },
+            { value: '־', tag: 'alien' },
+            { value: 'דם', tag: 'word' },
             { value: '.', tag: 'punctuation' },
             { value: 'תְּפֹס', tag: 'word' },
             { value: 'חָזָק', tag: 'word' },
@@ -72,7 +76,6 @@ describe('he - Hebrew', function () {
             { value: 'מטף', tag: 'word' },
             { value: 'שתן', tag: 'word' },
             { value: 'חם', tag: 'word' },
-            { value: '.', tag: 'punctuation' }
-          ]);
+            { value: '.', tag: 'punctuation' }]);
     });
 });
